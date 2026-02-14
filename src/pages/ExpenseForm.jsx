@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Input from '../components/Input';
 import Select from '../components/Select';
 import Button from '../components/Button';
 import useExpenseStore from '../store/expenseStore';
 import useAuthStore from '../store/authStore';
+import useGroupStore from '../store/groupStore';
 import expenseService from '../services/expenseService';
 import userService from '../services/userService';
 
 const ExpenseForm = () => {
     const { id } = useParams();
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const isEdit = !!id;
 
     const { addExpense, updateExpense } = useExpenseStore();
     const user = useAuthStore((state) => state.user);
+    const { groups, fetchGroups } = useGroupStore();
 
     const [formData, setFormData] = useState({
         description: '',
@@ -24,6 +27,8 @@ const ExpenseForm = () => {
         participants: [],
         splitType: 'equal',
         percentageSplits: [],
+        groupId: searchParams.get('groupId') || '',
+        category: '',
     });
 
     const [users, setUsers] = useState([]);
@@ -33,6 +38,7 @@ const ExpenseForm = () => {
 
     useEffect(() => {
         fetchUsers();
+        fetchGroups();
         if (isEdit) {
             loadExpense();
         }
@@ -61,6 +67,8 @@ const ExpenseForm = () => {
                 participants: expense.participants.map((p) => p._id || p),
                 splitType: expense.splitType,
                 percentageSplits: expense.percentageSplits || [],
+                groupId: expense.groupId || '',
+                category: expense.category || '',
             });
 
             // Extract unique users from expense
@@ -146,6 +154,11 @@ const ExpenseForm = () => {
                 data.percentageSplits = formData.percentageSplits;
             }
 
+            if (formData.groupId) {
+                data.groupId = formData.groupId;
+                data.category = formData.category;
+            }
+
             if (isEdit) {
                 await updateExpense(id, data);
             } else {
@@ -207,6 +220,30 @@ const ExpenseForm = () => {
                         }))}
                         required
                     />
+
+                    <Select
+                        label="Group (Optional)"
+                        name="groupId"
+                        value={formData.groupId}
+                        onChange={handleChange}
+                        options={[
+                            { value: '', label: 'No Group' },
+                            ...groups.map((g) => ({
+                                value: g._id,
+                                label: g.name,
+                            })),
+                        ]}
+                    />
+
+                    {formData.groupId && (
+                        <Input
+                            label="Category"
+                            name="category"
+                            value={formData.category}
+                            onChange={handleChange}
+                            placeholder="e.g., Food, Travel, Entertainment"
+                        />
+                    )}
 
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
