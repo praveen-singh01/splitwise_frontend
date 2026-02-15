@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5007/api';
+const API_BASE_URL = 'https://spliwise-backend.onrender.com/api';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
