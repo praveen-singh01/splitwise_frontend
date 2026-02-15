@@ -30,6 +30,12 @@ const Balances = () => {
         }
     };
 
+    const getUserName = (userId) => {
+        // If it's the current user, return 'You'
+        if (userId === user._id) return 'You';
+        return balanceData?.users?.[userId]?.name || userId;
+    };
+
     const renderAllBalances = () => {
         if (!balanceData?.balances || !balanceData?.settlements) {
             return <p className="text-gray-500">No balance data available</p>;
@@ -45,13 +51,13 @@ const Balances = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {Object.entries(balances).map(([userId, balance]) => (
                             <div key={userId} className="card">
-                                <p className="text-sm text-gray-600 mb-1">{userId}</p>
+                                <p className="text-lg font-semibold text-gray-900 mb-1">{getUserName(userId)}</p>
                                 <p
                                     className={`text-2xl font-bold ${balance > 0
-                                            ? 'text-green-600'
-                                            : balance < 0
-                                                ? 'text-red-600'
-                                                : 'text-gray-600'
+                                        ? 'text-green-600'
+                                        : balance < 0
+                                            ? 'text-red-600'
+                                            : 'text-gray-600'
                                         }`}
                                 >
                                     {balance > 0 ? '+' : ''}₹{balance.toFixed(2)}
@@ -76,7 +82,14 @@ const Balances = () => {
                     ) : (
                         <div className="space-y-4">
                             {settlements.map((settlement, index) => (
-                                <SettlementCard key={index} settlement={settlement} />
+                                <SettlementCard
+                                    key={index}
+                                    settlement={{
+                                        ...settlement,
+                                        fromName: getUserName(settlement.from),
+                                        toName: getUserName(settlement.to)
+                                    }}
+                                />
                             ))}
                         </div>
                     )}
@@ -99,10 +112,10 @@ const Balances = () => {
                     <h2 className="text-lg font-semibold text-gray-700 mb-2">Your Net Balance</h2>
                     <p
                         className={`text-5xl font-bold ${netBalance > 0
-                                ? 'text-green-600'
-                                : netBalance < 0
-                                    ? 'text-red-600'
-                                    : 'text-gray-600'
+                            ? 'text-green-600'
+                            : netBalance < 0
+                                ? 'text-red-600'
+                                : 'text-gray-600'
                             }`}
                     >
                         {netBalance > 0 ? '+' : ''}₹{netBalance.toFixed(2)}
@@ -122,7 +135,14 @@ const Balances = () => {
                         <h2 className="text-2xl font-bold text-gray-900 mb-4">You Owe</h2>
                         <div className="space-y-4">
                             {owes.map((settlement, index) => (
-                                <SettlementCard key={index} settlement={settlement} />
+                                <SettlementCard
+                                    key={index}
+                                    settlement={{
+                                        ...settlement,
+                                        fromName: 'You',
+                                        toName: getUserName(settlement.to)
+                                    }}
+                                />
                             ))}
                         </div>
                     </div>
@@ -134,7 +154,14 @@ const Balances = () => {
                         <h2 className="text-2xl font-bold text-gray-900 mb-4">Owed to You</h2>
                         <div className="space-y-4">
                             {owedBy.map((settlement, index) => (
-                                <SettlementCard key={index} settlement={settlement} />
+                                <SettlementCard
+                                    key={index}
+                                    settlement={{
+                                        ...settlement,
+                                        fromName: getUserName(settlement.from),
+                                        toName: 'You'
+                                    }}
+                                />
                             ))}
                         </div>
                     </div>
