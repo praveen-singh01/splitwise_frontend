@@ -5,5 +5,11 @@
     "framework": "vite",
     "env": {
         "VITE_API_URL": "https://spliwise-backend.onrender.com/api"
-    }
+    },
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
 }
